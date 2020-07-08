@@ -108,13 +108,13 @@ Kc22z = Kc(2,2).num{1,1};
 
 %% txt com o controlador
 Kf=minreal(ss(Kc,'minimal'),1e-4);
-salva_matrix(SYSd, Kf, sys_W1_d);
+save_matrix(SYSd, Kf, sys_W1_d);
 % salva_TF(Kc);
 
 %% Simulação
 t_run = 700;
 hinicial=[9 7 0 0];
-sim('tanques_LQG_identificado2.slx')
+sim('Sim_LQG_LTR_pheno.slx')
 
 figure(12);
 subplot(2,1,1);

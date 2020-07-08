@@ -1,4 +1,4 @@
-function [w]=Barreiras()
+function [w]=Barriers()
 %% Modelo Nominal
 % Determinar k
 k=[18 18];
@@ -9,7 +9,7 @@ gamma=[0.55 0.54];
 % Determinar w
 w=[logspace(-2,-1,50) logspace(-1,0,50) logspace(0,1,50) logspace(1,2,50)];
 
-Gn = Modelo (k, gamma);
+Gn = Model(k, gamma);
 %% Singulares
 
 sv=sigma(Gn,w);
@@ -36,7 +36,7 @@ aux=0;
                  aux=aux+1;
                  % Contruir vetores de k e gamma, determinar os singulares
                  kr=[k1(a) k2(b)]; gammar=[g1(c) g2(d)];
-                 Gr=Modelo(kr, gammar);
+                 Gr=Model(kr, gammar);
                  sr=sigma(Gr,w);
                  sigr1(aux,:)=sr(1,:); 
                  sigr2(aux,:)=sr(2,:); 

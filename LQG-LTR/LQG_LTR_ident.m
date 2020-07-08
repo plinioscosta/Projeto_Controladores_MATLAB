@@ -35,22 +35,40 @@ Dc = [0 0;
      0 0];
 
 %% Valores dos par�metros do sistema identificado discreto
-A = [-0.235284      0          0        0;
-       0       -0.0324658      0        0;
-       0            0      0.999303     0;
-       0            0          0     0.998813];
+%Ensaio de 2h, per�odo 2min e amplitude 0.5
+A = [-0.635042      0          0        0;
+       0         0.175049      0        0;
+       0            0      0.998634     0;
+       0            0          0     0.999309];
     
-B = [ -0.181039          0.00549506;
-       0.173779          0.026386;
-       0.000768588       0.000513417;
-       0.000459122      -0.000180185];
+B = [ -0.00748007         0.0825176;
+       0.0488471          0.0136645;
+       0.000501004       -0.0000581847;
+      -0.000288367       -0.000459953];
    
 
-C = [-0.498597  -0.23744    6.8883   -5.76097; 
-     -0.838034  -1.23035    6.40454   1.21465]; 
+C = [-0.312637  -0.274487    -0.753989   -11.7856; 
+      1.0403    -3.03498      8.33751    -8.11532]; 
  
 D = [0 0;
      0 0];
+ 
+% A = [-0.235284      0          0        0;
+%        0       -0.0324658      0        0;
+%        0            0      0.999303     0;
+%        0            0          0     0.998813];
+%     
+% B = [ -0.181039          0.00549506;
+%        0.173779          0.026386;
+%        0.000768588       0.000513417;
+%        0.000459122      -0.000180185];
+%    
+% 
+% C = [-0.498597  -0.23744    6.8883   -5.76097; 
+%      -0.838034  -1.23035    6.40454   1.21465]; 
+%  
+% D = [0 0;
+%      0 0];
 
 Sys_i_d= ss(A,B,C,D,Ts);
 Sys_i_c = d2c(Sys_i_d,'tustin');
@@ -103,7 +121,7 @@ p2 = semilogx(w,20*log10(sig_end(2,:)),'r');
 set(p2,'LineWidth',1.5);
 
 % Controle LQR
-Ro = 1e-6;
+Ro = 1e-15;
 R_cheap = Ro*eye(2);
 Q_cheap = transpose(C_amp)*C_amp;
 K = dlqr(Phi_amp,Gamma_amp,Q_cheap,R_cheap);
@@ -132,32 +150,31 @@ Kc22z = Kc(2,2).num{1,1};
 
 %% txt com o controlador
 Kf=minreal(ss(Kc,'minimal'),1e-4);
-salva_matrix(Sys_i_d, Kf, sys_W1_d);
-% salva_TF(Kc);
+save_matrix(Sys_i_d, Kf, sys_W1_d);
 
 %% Simulação
 t_run = 700;
 hinicial=[9 7 0 0];
-% sim('tanques_LQG_identificado2.slx')
-% 
-% figure(12);
-% subplot(2,1,1);
-% plot(t,h1,t,r1,'r');
-% axis([0 t(end) 5 15]);grid on; hold on;
-% title('Tanque 1');
-% ylabel('altura do líquido (cm)');
-% xlabel('Tempo (s)');
-% 
-% subplot(2,1,2);
-% plot(t,h2,t,r2,'r');
-% axis([0 t(end) 5 15]);grid on; hold on;
-% title('Tanque 2');
-% ylabel('altura do líquido (cm)');
-% xlabel('Tempo (s)');
-% 
-% figure(13);
-% plot(t,v1,t,v2,'r');
-% title('Esforço de controle');
-% ylabel('Tensão da Bomba (V)');
-% xlabel('Tempo (s)');
-% legend('Bomba 1','Bomba 2');
+sim('Sim_LQG_LTR_ident.slx')
+
+figure(12);
+subplot(2,1,1);
+plot(t,h1,t,r1,'r');
+axis([0 t(end) 5 15]);grid on; hold on;
+title('Tanque 1');
+ylabel('altura do líquido (cm)');
+xlabel('Tempo (s)');
+
+subplot(2,1,2);
+plot(t,h2,t,r2,'r');
+axis([0 t(end) 5 15]);grid on; hold on;
+title('Tanque 2');
+ylabel('altura do líquido (cm)');
+xlabel('Tempo (s)');
+
+figure(13);
+plot(t,v1,t,v2,'r');
+title('Esforço de controle');
+ylabel('Tensão da Bomba (V)');
+xlabel('Tempo (s)');
+legend('Bomba 1','Bomba 2');
