@@ -56,7 +56,7 @@ Sys_i_d= ss(A,B,C,D,Ts);
 Sys_i_c = d2c(Sys_i_d,'tustin');
 
 %plotar as barreiras
-w=Barreiras();
+w=Barriers();
 
 %% Projeto Controlador
 z = tf('z'); 

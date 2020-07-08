@@ -57,19 +57,37 @@ Ci = [-4.10149   -3.78303   -1.65082   2.54713;
 Di = [0 0;
      0 0];
 %plotar as barreiras
-w=Barreiras(); 
+w=Barriers(); 
  
 %% Projeto Controlador
+% Compensador W1
+% Kp = 15;
+% Ki = 0.5;
+Kp = 5;
+Ki = 0.1;
+s = tf('s');
+W1 = 10*[(Kp +(Ki/s)) 0; 0 (Kp +(Ki/s))];
+sys_W1_d = ss(c2d(W1,Ts_fen),'minimal');
 
-% Planta fenomenologica ampliada
-Pgain=1;
-Igain=1;
-Phi_amp = [Igain*eye(2) zeros(2,4); SYS_d.b SYS_d.a];
-Gamma_amp = [[Pgain 0; 0 Pgain]; SYS_d.b*[1 0; 0 1]];
-C_amp = [zeros(2) SYS_d.c];
-SYS_amp = ss(Phi_amp,Gamma_amp,C_amp,Dc,Ts_fen);
+% Compensador W2
+W2 = (100/(s+30))*eye(2);
+sys_W2_d = ss(c2d(W2,Ts_fen),'minimal');
 
-sigma(w,SYS_amp);
+
+SYS_d_amp = sys_W1_d*SYS_d;
+Phi_amp = SYS_d_amp.a;
+Gamma_amp = SYS_d_amp.b;
+C_amp = SYS_d_amp.c;
+D_amp = SYS_d_amp.d;
+
+% Pgain=1;
+% Igain=1;
+% Phi_amp = [Igain*eye(2) zeros(2,4); SYS_d.b SYS_d.a];
+% Gamma_amp = [[Pgain 0; 0 Pgain]; SYS_d.b*[1 0; 0 1]];
+% C_amp = [zeros(2) SYS_d.c];
+% SYS_amp = ss(Phi_amp,Gamma_amp,C_amp,Dc,Ts_fen);
+
+sigma(w,SYS_d_amp);
 
 %% Equações de Riccati
 
@@ -109,7 +127,7 @@ K = [Ak Bk;
  
 SYS_k =  ss(Ak,Bk,Ck,Dk,Ts_fen);
 
-sigma(w,SYS_k*SYS_amp);
+sigma(SYS_k*SYS_d_amp);
  
 %% Simulação 
  

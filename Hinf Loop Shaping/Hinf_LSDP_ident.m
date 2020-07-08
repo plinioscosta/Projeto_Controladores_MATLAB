@@ -59,7 +59,7 @@ Di = [0 0;
  
 SYS_d_i = ss(Ai,Bi,Ci,Di,Ts); 
 %plotar as barreiras
-w=Barreiras(); 
+w=Barriers(); 
  
 %% Projeto Controlador
 % Compensador W1
