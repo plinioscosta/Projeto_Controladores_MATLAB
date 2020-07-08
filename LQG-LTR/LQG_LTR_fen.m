@@ -46,6 +46,13 @@ SYS = ss(Ac,Bc,Cc,Dc);
 SYSd = c2d(SYS,Ts);
 Phi = SYSd.a; Gamma = SYSd.b; Cd = SYSd.c; Dd = SYSd.d;
 
+% Integrador
+Kp = 1;
+Ki = 1;
+s = tf('s');
+W1 = [(Kp +(Ki/s)) 0; 0 (Kp +(Ki/s))];
+sys_W1_d = ss(c2d(W1,Ts),'minimal');
+
 % Planta ampliada
 Phi_amp = [eye(2) zeros(2,4); Gamma Phi] ;
 Gamma_amp = [[1 0; 0 1]; Gamma*[1 0; 0 1]];
@@ -101,7 +108,7 @@ Kc22z = Kc(2,2).num{1,1};
 
 %% txt com o controlador
 Kf=minreal(ss(Kc,'minimal'),1e-4);
-% salva_matrix(Kf);
+salva_matrix(SYSd, Kf, sys_W1_d);
 % salva_TF(Kc);
 
 %% Simulação
