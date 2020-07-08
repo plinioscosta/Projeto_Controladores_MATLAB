@@ -1,9 +1,7 @@
 clear all; clc; close all;
 
 ts = 600;
-Tend = ts*2;
-Ts_fen=0.1;
-Ts=1;
+Ts=0.1;
 
 %% Valores dos par�metros do sistema fenomenológico contínuo
 A1 = 254.469; A2 = 254.469; A3 = 254.469; A4 = 254.469;
@@ -38,61 +36,43 @@ Dc = [0 0;
      0 0];
 
 SYS_c = ss(Ac,Bc,Cc,Dc);
-SYS_d = c2d(SYS_c,Ts_fen); 
-%% Valores dos par�metros do sistema identificado discreto
-Ai = [0.996064     0          0            0;
-       0       0.993979      0            0;
-       0          0       0.748874        0;
-       0          0          0        0.773849];
-    
-Bi = [  0.0108245           -0.00278004;
-      -0.0212829           -0.0119419;
-       0.0407889           -0.00672807;
-       0.0244862           -0.034738];
-   
+SYS_d = c2d(SYS_c,Ts); 
 
-Ci = [-4.10149   -3.78303   -1.65082   2.54713; 
-     -0.224847  -2.26579   -1.45963   0.206304]; 
- 
-Di = [0 0;
-     0 0];
 %plotar as barreiras
 w=Barriers(); 
  
 %% Projeto Controlador
-% Compensador W1
-% Kp = 15;
-% Ki = 0.5;
-Kp = 5;
-Ki = 0.1;
+% Pre compensator + Post compensator
+bothComp = true;
+% W1 compensator
+Kp = 1;
+Ki = 1;
 s = tf('s');
-W1 = 10*[(Kp +(Ki/s)) 0; 0 (Kp +(Ki/s))];
-sys_W1_d = ss(c2d(W1,Ts_fen),'minimal');
+W1 = 0.1*[(Kp +(Ki/s)) 0; 0 (Kp +(Ki/s))];
+sys_W1_d = ss(c2d(W1,Ts),'minimal');
 
-% Compensador W2
-W2 = (100/(s+30))*eye(2);
-sys_W2_d = ss(c2d(W2,Ts_fen),'minimal');
+% W2 Compensator
+if(bothComp)
+    W2 = (10/(s+10))*eye(2);
+    sys_W2_d = ss(c2d(W2,Ts),'minimal');
+else
+    W2 = ss(zeros(2),zeros(2),zeros(2),eye(2));
+end
 
-
-SYS_d_amp = sys_W1_d*SYS_d;
+SYS_d_amp = sys_W1_d*SYS_d*sys_W2_d;
 Phi_amp = SYS_d_amp.a;
 Gamma_amp = SYS_d_amp.b;
 C_amp = SYS_d_amp.c;
 D_amp = SYS_d_amp.d;
 
-% Pgain=1;
-% Igain=1;
-% Phi_amp = [Igain*eye(2) zeros(2,4); SYS_d.b SYS_d.a];
-% Gamma_amp = [[Pgain 0; 0 Pgain]; SYS_d.b*[1 0; 0 1]];
-% C_amp = [zeros(2) SYS_d.c];
-% SYS_amp = ss(Phi_amp,Gamma_amp,C_amp,Dc,Ts_fen);
-
 sigma(w,SYS_d_amp);
 
-%% Equações de Riccati
-
-% A^TXA - E^TXE - (A^TXB + S)(B^TXB + R)^-1 (A^TXB + S)^T + Q = 0
-%[X,K,L] = idare(A,B,Q,R,S,E)
+%% DAREs
+if(bothComp)
+   i=8; 
+else
+   i=6;
+end
 
 %Primeira DARE
 [P,Kp,Lp] = dare(Phi_amp,Gamma_amp,C_amp.'*C_amp);
@@ -101,8 +81,8 @@ sigma(w,SYS_d_amp);
 [Q,Kq,Lq] = dare(Phi_amp.',C_amp.',Gamma_amp*Gamma_amp.');
 
 %Terceira DARE
-gamma = 1000;
-Xinf = (gamma*gamma*P)/(gamma*gamma*eye(6)-(eye(6) + Q*P)); 
+gamma = 10;
+Xinf = (gamma*gamma*P)/(gamma*gamma*eye(i)-(eye(i) + Q*P)); 
 
 
 %Controlador K
@@ -113,9 +93,10 @@ R = [ (-Z2^(-2) - gamma^2*eye(2))      zeros(2) ;
 
 H = -Phi_amp*Q*C_amp.'/(eye(2) + C_amp*Q*C_amp.');
 
-F = -inv(R + [-Z2\H.'; Gamma_amp.']*Xinf*[-H/Z2 Gamma_amp])*([-Z2\C_amp; zeros(2,6)] + [-Z2\H.'; Gamma_amp.']*Xinf*Phi_amp);
-F1 = [F(1,1) F(1,2) F(1,3) F(1,4) F(1,5) F(1,6);F(2,1) F(2,2) F(2,3) F(2,4) F(2,5) F(2,6)];
-F2 = [F(3,1) F(3,2) F(3,3) F(3,4) F(3,5) F(3,6);F(4,1) F(4,2) F(4,3) F(4,4) F(4,5) F(4,6)];
+F = -inv(R + [-Z2\H.'; Gamma_amp.']*Xinf*[-H/Z2 Gamma_amp])*([-Z2\C_amp; zeros(2,i)] + [-Z2\H.'; Gamma_amp.']*Xinf*Phi_amp);
+
+F1 = F(1:2,1:i);
+F2 = F(3:4,1:i);
 
 Dk = (eye(2) + Gamma_amp.'*Xinf*Gamma_amp)\Gamma_amp.'*Xinf*H;
 Bk = -H + Gamma_amp*Dk;
@@ -125,11 +106,37 @@ Ak = Phi_amp + H*C_amp + Gamma_amp*Ck;
 K = [Ak Bk;
      Ck Dk];
  
-SYS_k =  ss(Ak,Bk,Ck,Dk,Ts_fen);
+SYS_k =  ss(Ak,Bk,Ck,Dk,Ts);
 
 sigma(SYS_k*SYS_d_amp);
- 
-%% Simulação 
- 
-t_run = 800;
-hinicial=[7 7 0 0];
+
+%% txt com o controlador
+Kf=minreal(ss(SYS_k,'minimal'),1e-4);
+save_matrix(SYS_d, sys_W1_d, sys_W2_d,SYS_k);
+
+%% Simulação
+t_run = 400;
+hinicial=[9 7 0 0];
+sim('Sim_Hinf_pheno.slx')
+
+figure(12);
+subplot(2,1,1);
+plot(t,h1,t,r1,'r');
+axis([0 t(end) 5 15]);grid on; hold on;
+title('Tanque 1');
+ylabel('altura do líquido (cm)');
+xlabel('Tempo (s)');
+
+subplot(2,1,2);
+plot(t,h2,t,r2,'r');
+axis([0 t(end) 5 15]);grid on; hold on;
+title('Tanque 2');
+ylabel('altura do líquido (cm)');
+xlabel('Tempo (s)');
+
+figure(13);
+plot(t,v1,t,v2,'r');
+title('Esforço de controle');
+ylabel('Tensão da Bomba (V)');
+xlabel('Tempo (s)');
+legend('Bomba 1','Bomba 2');

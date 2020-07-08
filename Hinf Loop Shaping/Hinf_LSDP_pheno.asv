@@ -1,7 +1,6 @@
 clear all; clc; close all;
 
 ts = 600;
-Tend = ts*2;
 Ts=0.1;
 
 %% Valores dos par�metros do sistema fenomenológico contínuo
@@ -38,57 +37,21 @@ Dc = [0 0;
 
 SYS_c = ss(Ac,Bc,Cc,Dc);
 SYS_d = c2d(SYS_c,Ts); 
-%% Valores dos par�metros do sistema identificado discreto
-%Ensaio de 2h, per�odo 2min e amplitude 0.5
-Ai = [-0.635042      0          0        0;
-       0         0.175049      0        0;
-       0            0      0.998634     0;
-       0            0          0     0.999309];
-    
-Bi = [ -0.00748007         0.0825176;
-       0.0488471          0.0136645;
-       0.000501004       -0.0000581847;
-      -0.000288367       -0.000459953];
-   
 
-Ci = [-0.312637  -0.274487    -0.753989   -11.7856; 
-      1.0403    -3.03498      8.33751    -8.11532]; 
- 
-Di = [0 0;
-     0 0];
-
-% Ai = [0.996064     0          0            0;
-%        0       0.993979      0            0;
-%        0          0       0.748874        0;
-%        0          0          0        0.773849];
-%     
-% Bi = [  0.0108245           -0.00278004;
-%       -0.0212829           -0.0119419;
-%        0.0407889           -0.00672807;
-%        0.0244862           -0.034738];
-%    
-% 
-% Ci = [-4.10149   -3.78303   -1.65082   2.54713; 
-%      -0.224847  -2.26579   -1.45963   0.206304]; 
-%  
-% Di = [0 0;
-%      0 0];
- 
-SYS_d_i = ss(Ai,Bi,Ci,Di,Ts); 
 %plotar as barreiras
 w=Barriers(); 
  
 %% Projeto Controlador
 % Pre compensator + Post compensator
 bothComp = true;
-% W1 compansator
+% W1 compensator
 Kp = 1;
 Ki = 1;
 s = tf('s');
 W1 = 0.1*[(Kp +(Ki/s)) 0; 0 (Kp +(Ki/s))];
 sys_W1_d = ss(c2d(W1,Ts),'minimal');
 
-% % Compensador W2
+% W2 Compensator
 if(bothComp)
     W2 = (10/(s+10))*eye(2);
     sys_W2_d = ss(c2d(W2,Ts),'minimal');
@@ -96,7 +59,7 @@ else
     W2 = ss(zeros(2),zeros(2),zeros(2),eye(2));
 end
 
-SYS_d_amp = sys_W1_d*SYS_d_i*sys_W2_d;
+SYS_d_amp = sys_W1_d*SYS_d*sys_W2_d;
 Phi_amp = SYS_d_amp.a;
 Gamma_amp = SYS_d_amp.b;
 C_amp = SYS_d_amp.c;
@@ -104,7 +67,7 @@ D_amp = SYS_d_amp.d;
 
 sigma(w,SYS_d_amp);
 
-%% Equações de Riccati
+%% DAREs
 if(bothComp)
    i=8; 
 else
@@ -149,12 +112,12 @@ sigma(SYS_k*SYS_d_amp);
 
 %% txt com o controlador
 Kf=minreal(ss(SYS_k,'minimal'),1e-4);
-save_matrix(SYS_d, sys_W1_d, sys_W2_d, SYS_k);
+save_matrix(SYSd, sys_W1_d, sys_W2_d,SYS_k);
 
 %% Simulação
-t_run = 200;
+t_run = 400;
 hinicial=[9 7 0 0];
-sim('Sim_Hinf_ident.slx')
+sim('Sim_Hinf_pheno.slx')
 
 figure(12);
 subplot(2,1,1);
@@ -177,4 +140,3 @@ title('Esforço de controle');
 ylabel('Tensão da Bomba (V)');
 xlabel('Tempo (s)');
 legend('Bomba 1','Bomba 2');
-
