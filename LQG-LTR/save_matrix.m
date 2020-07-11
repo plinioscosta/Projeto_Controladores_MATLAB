@@ -95,6 +95,9 @@ end
 
 %% K robust
 fprintf(fid, '\n');
+dim=size(AAk);
+fprintf(fid, '%d',dim(1));
+fprintf(fid, '\n');
 for aux1 = 1:size(AAk,1)
     for aux2 = 1:(size(AAk,2)-1)
         fprintf(fid, '%5.24f\t',AAk(aux1,aux2));
