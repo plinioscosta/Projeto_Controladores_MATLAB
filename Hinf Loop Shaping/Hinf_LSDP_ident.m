@@ -101,9 +101,9 @@ w=Barriers();
 bothComp = true;
 % W1 compansator
 Kp = 1;
-Ki = 1;
+Ki = 0.5;
 s = tf('s');
-W1 = 0.1*[(Kp +(Ki/s)) 0; 0 (Kp +(Ki/s))];
+W1 = 10*[(Kp +(Ki/s)) 0; 0 (Kp +(Ki/s))];
 sys_W1_d = ss(c2d(W1,Ts),'minimal');
 
 % % Compensador W2

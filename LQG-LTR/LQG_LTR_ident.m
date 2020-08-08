@@ -3,7 +3,7 @@ clear all; clc; close all;
 Ts=0.1;
 
 %% Valores dos par�metros do sistema fenomenológico contínuo
-A1 = 254.469; A2 = 254.469; A3 = 254.469; A4 = 254.469;
+A1 = 245; A2 = 270; A3 = 254.469; A4 = 254.469;
 a1 = 0.466; a2 = 0.466; %a3 = 0.466; a4 = 0.466; 
 a3 = 0.3421; a4 = 0.3421; 
 k1 = 18; k2 = 18;
@@ -35,23 +35,61 @@ Dc = [0 0;
      0 0];
 
 %% Valores dos par�metros do sistema identificado discreto
-%Ensaio de 8h, per�odo 6min e amplitude 0.5
-A = [-0.0334957    -0.745077       0        0;
-      0.745077     -0.0334957      0        0;
-         0              0      0.998593     0;
-         0              0          0     0.999334];
+
+
+
+% Ensaio de 8h, per�odo 6min e amplitude 0.5
+% A = [-0.0334957    -0.745077       0        0;
+%       0.745077     -0.0334957      0        0;
+%          0              0      0.998593     0;
+%          0              0          0     0.999334];
+%     
+% B = [  0.0638893         0.0367221;
+%       -0.0109006         0.0556748;
+%       -0.000417213      -0.0000154718;
+%       -0.000180197      -0.000299378];
+%    
+% 
+% C = [-0.328419  -0.444393     1.53754   -17.7295; 
+%      -1.28311    1.32663     -12.9599   -8.5944]; 
+%  
+% D = [0 0;
+%      0 0];
+  
+ A = [-0.49862        -0.77708     0      0;
+       0.77708        -0.49862      0      0;
+         0              0     0.97800     0;
+         0              0          0      0.97291];
     
-B = [  0.0638893         0.0367221;
-      -0.0109006         0.0556748;
-      -0.000417213      -0.0000154718;
-      -0.000180197      -0.000299378];
+B = [  0.04390           0.09716;
+       0.04108          -0.09873;
+      -0.06667         -0.02675;
+       0.06962          0.01851];
    
 
-C = [-0.328419  -0.444393     1.53754   -17.7295; 
-     -1.28311    1.32663     -12.9599   -8.5944]; 
+C = [ -0.64011  -0.13718 -2.23952 -1.60866; 
+      -0.30339  0.05952 -3.35587  -2.94187]; 
  
 D = [0 0;
      0 0];
+ 
+%greybox 0.1s
+%  A = [-0.00701061        0      0.0945717      0;
+%          0         -0.00739677      0      0.107466;
+%          0              0     -0.145283     0;
+%          0              0          0      -0.203117];
+%     
+% B = [  0.0316818           0;
+%            0          0.0322401;
+%            0         0.0893089;
+%        0.104422          0];
+%    
+% 
+% C = [ 1  0  0  0; 
+%       0  1  0  0]; 
+%  
+% D = [0 0;
+%      0 0];
 %Ensaio de 2h, per�odo 2min e amplitude 0.5
 % A = [-0.635042      0          0        0;
 %        0         0.175049      0        0;
@@ -69,7 +107,7 @@ D = [0 0;
 %  
 % D = [0 0;
 %      0 0];
- 
+%  
 % A = [-0.235284      0          0        0;
 %        0       -0.0324658      0        0;
 %        0            0      0.999303     0;
@@ -82,25 +120,31 @@ D = [0 0;
 %    
 % 
 % C = [-0.498597  -0.23744    6.8883   -5.76097; 
+% 
 %      -0.838034  -1.23035    6.40454   1.21465]; 
 %  
 % D = [0 0;
 %      0 0];
 
-Sys_i_d= ss(A,B,C,D,Ts);
+z = tf('z'); 
+z.Ts = Ts;
+Sys_i = ss(A,B,C,D,Ts);
+% Sys_i_d = c2d(Sys_i,Ts);
+% Sys_i_d= [((-0.00733851)/(1-0.99296*z^-1)) ((-0.027635 + 0.0266136*z^-1 +0.027525*z^-2)/(0.000703574*z^-1 - 0.00655089*z^-2)) ;
+%           ((0.0403992 - 0.0375985*z^-1 + 0.0312824*z^-2)/(-0.0372699*z^-1 + 0.0295741*z^-2)) ((-0.0124194)/(1-0.989607*z^-1))]
+% 
+%       
+% Sys_i_d= ss(A,B,C,D,Ts);
 % step(Sys_i_d)
-Sys_i_c = d2c(Sys_i_d,'tustin');
+% pzplot(Sys_i_d)
+% Sys_i_c = d2c(Sys_i_d,'tustin');
 
 %plotar as barreiras
 w=Barriers();
-
 %% Projeto Controlador
-z = tf('z'); 
-z.Ts = Ts;
 SYS = ss(Ac,Bc,Cc,Dc);
 SYSd = c2d(SYS,Ts);
 Phi = SYSd.a; Gamma = SYSd.b; Cd = SYSd.c; Dd = SYSd.d;
-step(SYSd)
 
 % Integrador
 Kp = 1;
@@ -113,24 +157,52 @@ sys_W1_d = ss(c2d(W1,Ts),'minimal');
 Phi_amp = [eye(2) zeros(2,4); B A] ;
 Gamma_amp = [[1 0; 0 1]; B*[1 0; 0 1]];
 C_amp = [zeros(2) C];
-SYS_amp = ss(Phi_amp,Gamma_amp,C_amp,Dc,Ts);
+SYS_amp = ss(Phi_amp,Gamma_amp,C_amp,D,Ts);
+
+% LL=-(Cc*Ac^-1*Bc)^-1;w=Barriers();
+
+%% Projeto Controlador
+z = tf('z'); 
+z.Ts = Ts;
+SYS = ss(Ac,Bc,Cc,Dc);
+SYSd = c2d(SYS,Ts);
+Phi = SYSd.a; Gamma = SYSd.b; Cd = SYSd.c; Dd = SYSd.d;
+
+% Integrador
+Kp = 1;
+Ki = 1;
+s = tf('s');
+W1 = [(Kp +(Ki/s)) 0; 0 (Kp +(Ki/s))];
+sys_W1_d = ss(c2d(W1,Ts),'minimal');
+
+% % Planta ampliada
+% Phi_amp = [eye(2) zeros(2,4); B A] ;
+% Gamma_amp = [[1 0; 0 1]; B*[1 0; 0 1]];
+% C_amp = [zeros(2) C];
+% SYS_amp = ss(Phi_amp,Gamma_amp,C_amp,Dc,Ts);
+%pzplot(SYS_amp)
 
 %Casamento dos singulares
-LL=-(Sys_i_c.c*Sys_i_c.a^-1*Sys_i_c.b)^-1;
-LH=-Sys_i_c.a^-1*Sys_i_c.b*LL;
+% LL=-(Sys_i_c.c*Sys_i_c.a^-1*Sys_i_c.b)^-1;
+% LH=-Sys_i_c.a^-1*Sys_i_c.b*LL;
+% L=[LL; LH];
+
+% alfa=0;
+% We = -Ts*inv(C*inv(A - exp(-alfa*Ts)*eye(4))*B);
+% LH=-inv(A -exp(-alfa*Ts)*eye(4))*B*We;
+% LL=We;
+% L=[LL; LH];
+
+alfa=0;
+We = -Ts*inv(C*inv(A - exp(-alfa*Ts)*eye(4))*B);
+LH=-inv(A -exp(-alfa*Ts)*eye(4))*B*We;
+LL=We;
 L=[LL; LH];
 
-% LL=-(Cc*Ac^-1*Bc)^-1;
-% LH=-Ac^-1*Bc*LL;
-% L=[LL; LH];
-% alfa=0;
-% W1 = -Ts*inv(C*inv(A - exp(-alfa*Ts)*eye(4))*B);
-% LL=-inv(A -exp(-alfa*Ts)*eye(4))*B*W1;
-% LH=W1;
-% L=[LL; LH];
+% L= Gamma_amp;
 
 % Filtro de Kalman
-Lc = dlqe(Phi_amp, L, C_amp,0.001*eye(2), eye(2));
+Lc = dlqe(Phi_amp, L, C_amp,10*eye(2), eye(2));
 sys_KF = ss(Phi_amp,Phi_amp*Lc,C_amp,0); sys_KF.Ts = Ts;
 sig_end = sigma(w,sys_KF);
 p1 = semilogx(w,20*log10(sig_end(1,:)),'r'); 
@@ -140,7 +212,7 @@ p2 = semilogx(w,20*log10(sig_end(2,:)),'r');
 set(p2,'LineWidth',1.5);
 
 % Controle LQR
-Ro = 1e-15;
+Ro = 1e-4;
 R_cheap = Ro*eye(2);
 Q_cheap = transpose(C_amp)*C_amp;
 K = dlqr(Phi_amp,Gamma_amp,Q_cheap,R_cheap);
@@ -155,7 +227,6 @@ set(p1,'LineWidth',1.5);
 p2 = semilogx(w,20*log10(sig_rec(2,:)),'b');
 set(p2,'LineWidth',1.5);
 
-
 % Componentes de Kc:
 % Polos de Kc (iguais em todos os elementos de Kc):
 Kcp = Kc(1,1).den{1,1};
@@ -169,7 +240,7 @@ Kc22z = Kc(2,2).num{1,1};
 
 %% txt com o controlador
 Kf=minreal(ss(Kc,'minimal'),1e-4);
-save_matrix(Sys_i_d, Kf, sys_W1_d);
+% save_matrix(Sys_i_d, Kf, sys_W1_d);
 
 %% Simulação
 t_run = 700;

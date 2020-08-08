@@ -1,27 +1,27 @@
 function [G] = Modelo(k,gamma)
-%% Descrição do Sistema
+%% Descriï¿½ï¿½o do Sistema
 
-% Variáveis de Estado : altura da coluna d`água nos tanques (0-30 cm)
-% Entrada do sistema : voltagem nas válvulas (0-10 V)
+% Variï¿½veis de Estado : altura da coluna d`ï¿½gua nos tanques (0-30 cm)
+% Entrada do sistema : voltagem nas vï¿½lvulas (0-10 V)
 
 d_maior =  [18 18 18 18]; % (sequencia 1, 2, 3, 4) em cm
 d_menor = [0.77 0.77 0.66 0.66]; % (sequencia 1, 2, 3, 4) em cm
 
-% Seção transversal dos tanques (cm)
+% Seï¿½ï¿½o transversal dos tanques (cm)
 area_maior=pi*(d_maior.^2)/4;
 
-%Seção transversal dos buracos entre tanques (cm^2)
+%Seï¿½ï¿½o transversal dos buracos entre tanques (cm^2)
 area_menor = pi*(d_menor.^2)/4;
 
 
-%Aceleração da gravidade
+%Aceleraï¿½ï¿½o da gravidade
 g = 981; %cm/s^2
 
-%Definição de kc
+%Definiï¿½ï¿½o de kc
 kc=1;
 
-%% Ponto de Operação
-%ponto de operação desejado em cm
+%% Ponto de Operaï¿½ï¿½o
+%ponto de operaï¿½ï¿½o desejado em cm
 hi1=15; hi2=15;
 
 %variaveis nao controladas
@@ -45,10 +45,10 @@ A = [-1/T(1) 0 area_maior(3)/(area_maior(1)*T(3)) 0 ; 0 -1/T(2) 0 area_maior(4)/
 % Matriz de entrada
 B = [gamma(1)*k(1)/area_maior(1) 0; 0 gamma(2)*k(2)/area_maior(2); 0 (1-gamma(2))*k(2)/area_maior(3); (1-gamma(1))*k(1)/area_maior(4) 0 ];
 
-% Matriz de saída
+% Matriz de saï¿½da
 C = [kc 0 0 0; 0 kc 0 0];
 
-% Matriz de transferência direta
+% Matriz de transferï¿½ncia direta
 D = zeros(2);
 
 G = ss(A,B, C, D);
