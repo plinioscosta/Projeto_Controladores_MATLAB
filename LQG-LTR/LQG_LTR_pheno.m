@@ -71,7 +71,7 @@ L=[LL; LH];
 % L=[LL; LH];
 
 % Filtro de Kalman
-Lc = dlqe(Phi_amp, L, C_amp,0.05*eye(2), eye(2));
+Lc = dlqe(Phi_amp, L, C_amp,0.005*eye(2), eye(2));
 sys_KF = ss(Phi_amp,Phi_amp*Lc,C_amp,0); sys_KF.Ts = Ts;
 sig_end = sigma(w,sys_KF);
 p1 = semilogx(w,20*log10(sig_end(1,:)),'r'); 
