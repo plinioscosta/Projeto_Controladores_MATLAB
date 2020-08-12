@@ -7,7 +7,7 @@ Ts=0.1;
 A1 = 254.469; A2 = 254.469; A3 = 254.469; A4 = 254.469;
 a1 = 0.466; a2 = 0.466; %a3 = 0.466; a4 = 0.466; 
 a3 = 0.3421; a4 = 0.3421; 
-k1 = 10; k2 = 10;
+k1 = 18; k2 = 18;
 gamma_1 = 0.75; gamma_2 = 0.74; 
 g = 980;
 h0_1 = 9.2; h0_2 = 6.2; h0_3 = 0.7; h0_4 = 0.7;
@@ -48,12 +48,12 @@ bothComp = true;
 Kp = 10;
 Ki = 0.1;
 s = tf('s');
-W1 = 4*[(Kp +(Ki/s)) 0; 0 (Kp +(Ki/s))];
+W1 = 2*[(Kp +(Ki/s)) 0; 0 (Kp +(Ki/s))];
 sys_W1_d = ss(c2d(W1,Ts),'minimal');
 
 % W2 Compensator
 if(bothComp)
-    W2 = (10/(s+10))*eye(2);
+    W2 = (1/(s+1))*eye(2);
     sys_W2_d = ss(c2d(W2,Ts),'minimal');
 else
     W2 = ss(zeros(2),zeros(2),zeros(2),eye(2));
