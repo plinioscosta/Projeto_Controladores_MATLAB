@@ -96,6 +96,8 @@ set(p3,'LineWidth',1.5);
 p4 = semilogx(w,20*log10(sig_rec(2,:)),'b');
 set(p4,'LineWidth',1.5);
 legend([p1 p4],{'Malha Objetivo','Malha Recuperada'})
+ylabel('Magnitude (dB)');
+xlabel('Frequência (rad/s)');
 set(gcf,'Position',[100 100 750 480])
 % 
 %  sysMF=feedback(sys_G_Kc,-1*eye(2));
