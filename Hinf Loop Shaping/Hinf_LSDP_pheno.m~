@@ -53,7 +53,7 @@ sys_W1_d = ss(c2d(W1,Ts),'minimal');
 
 % W2 Compensator
 if(bothComp)
-    W2 = (10/(s+10))*eye(2);
+    W2 = (1/(s+1))*eye(2);
     sys_W2_d = ss(c2d(W2,Ts),'minimal');
 else
     W2 = ss(zeros(2),zeros(2),zeros(2),eye(2));
@@ -72,6 +72,7 @@ hold on;
 set(p1,'LineWidth',1.5);
 p2 = semilogx(w,20*log10(sig_end(2,:)),'r');
 set(p2,'LineWidth',1.5);
+grid on
 %% DAREs
 if(bothComp)
    i=8; 
@@ -86,7 +87,7 @@ end
 [Q,Kq,Lq] = dare(Phi_amp.',C_amp.',Gamma_amp*Gamma_amp.');
 
 %Terceira DARE
-%Gamma0min
+% %Gamma0min
 gamma = sqrt(1 + max(eig(Q*P))); 
 % gamma = 10;
 Xinf = (gamma*gamma*P)/(gamma*gamma*eye(i)-(eye(i) + Q*P)); 
@@ -120,7 +121,9 @@ p3 = semilogx(w,20*log10(sig_rec(1,:)),'b');
 set(p3,'LineWidth',1.5);
 p4 = semilogx(w,20*log10(sig_rec(2,:)),'b');
 set(p4,'LineWidth',1.5);
-legend([p1 p4],{'Valores singulares de W_2.G.W_1','Valores singulares de K_s.W_2.G.W_1'})
+legend([p1 p4],{'Valores Singulares de W_2.G.W_1','Valores Singulares de K_s.W_2.G.W_1'})
+ylabel('Magnitude (dB)');
+xlabel('Frequência (rad/s)');
 set(gcf,'Position',[100 100 750 480])
 
 % sysMF=feedback(SYS_d_amp*SYS_k,-1*eye(2));
@@ -134,31 +137,32 @@ save_matrix(SYS_d, sys_W1_d, sys_W2_d,SYS_k);
 
 %% Simulação
 t_run = 700;
-hinicial=[9 7 0 0];
+hinicial=[9 7 1 1];
 sim('Sim_Hinf_pheno.slx')
 
 figure(12);
 subplot(2,1,1);
 plot(t,h1,t,r1,'r');
-axis([0 t(end) 5 15]);grid on; hold on;
-title('Tanque 1');
-ylabel('altura do líquido (cm)');
-xlabel('Tempo (s)');
-legend('Nível do tanque 1','Setpoint do tanque 1');
+axis([0 t(end) 4 14]);grid on; hold on;
+title('Tank 1');
+ylabel('Liquid level (cm)');
+xlabel('Time (s)');
+legend('Tank 1 level','Tank 1 setpoint');
 
 subplot(2,1,2);
 plot(t,h2,t,r2,'r');
-axis([0 t(end) 4 15]);grid on; hold on;
-title('Tanque 2');
-ylabel('altura do líquido (cm)');
-xlabel('Tempo (s)');
-legend('Nível do tanque 2','Setpoint do tanque 2');
+axis([0 t(end) 4 14]);grid on; hold on;
+title('Tank 2');
+ylabel('Liquid level (cm)');
+xlabel('Time (s)');
+legend('Tank 2 level','Tank 2 setpoint');
 set(gcf,'Position',[100 100 750 480])
 
 figure(13);
 plot(t,v1,t,v2,'r');
-title('Esforço de controle');
-ylabel('Tensão da Bomba (V)');
-xlabel('Tempo (s)');
-legend('Bomba 1','Bomba 2');
-set(gcf,'Position',[100 100 750 480])
+title('Control effort');
+ylabel('Pump voltage (V)');
+xlabel('Time (s)');
+legend('Pump 1 voltage','Pump 2 voltage');
+set(gcf,'Position',[100 100 750 480]);
+grid on
