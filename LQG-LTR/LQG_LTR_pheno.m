@@ -128,23 +128,23 @@ figure(12);
 subplot(2,1,1);
 plot(t,h1,t,r1,'r');
 axis([0 t(end) 4 14]);grid on; hold on;
-title('Tanque 1');
-ylabel('altura do líquido (cm)');
-xlabel('Tempo (s)');
-legend('Nível do tanque 1','Setpoint do tanque 1');
+title('Tank 1');
+ylabel('Liquid Height (cm)');
+xlabel('Time (s)');
+legend('Tank 1 Level','Tank 1 Setpoint');
 
 subplot(2,1,2);
 plot(t,h2,t,r2,'r');
 axis([0 t(end) 4 14]);grid on; hold on;
-title('Tanque 2');
-ylabel('altura do líquido (cm)');
-xlabel('Tempo (s)');
-legend('Nível do tanque 2','Setpoint do tanque 2');
+title('Tank 2');
+ylabel('Liquid Height (cm)');
+xlabel('Time (s)');
+legend('Tank 2 Level','Tank 2 Setpoint'));
 set(gcf,'Position',[100 100 750 480])
 
 figure(13);
 plot(t,v1,t,v2,'r');
-title('Esforço de controle');
+title('Control Eff');
 ylabel('Tensão da Bomba (V)');
 xlabel('Tempo (s)');
 legend('Bomba 1','Bomba 2');
